@@ -100,6 +100,12 @@
     "import": "导入 ({count})",
     "noChats": "未发现任何聊天"
   },
+  "formatSelector": {
+    "title": "选择聊天记录格式",
+    "hint": "无法自动识别此文件的格式，请手动选择对应的聊天记录格式。",
+    "manualSelect": "手动选择格式",
+    "confirm": "使用此格式导入"
+  },
   "footer": {
     "website": "官网",
     "terms": "使用条款"

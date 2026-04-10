@@ -226,7 +226,9 @@ export const chatApi = {
   /**
    * 获取支持的格式列表
    */
-  getSupportedFormats: (): Promise<Array<{ name: string; platform: string }>> => {
+  getSupportedFormats: (): Promise<
+    Array<{ id: string; name: string; platform: string; extensions: string[] }>
+  > => {
     return ipcRenderer.invoke('chat:getSupportedFormats')
   },
 

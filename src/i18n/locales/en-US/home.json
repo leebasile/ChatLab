@@ -100,6 +100,12 @@
     "import": "Import ({count})",
     "noChats": "No chats found"
   },
+  "formatSelector": {
+    "title": "Select Chat Format",
+    "hint": "Unable to auto-detect the file format. Please manually select the corresponding chat format.",
+    "manualSelect": "Select format manually",
+    "confirm": "Import with this format"
+  },
   "footer": {
     "website": "Website",
     "terms": "Terms of Use"

@@ -135,7 +135,7 @@ interface ChatApi {
   ) => Promise<Array<{ type: MessageType; count: number }>>
   getTimeRange: (sessionId: string) => Promise<{ start: number; end: number } | null>
   getDbDirectory: () => Promise<string | null>
-  getSupportedFormats: () => Promise<Array<{ name: string; platform: string }>>
+  getSupportedFormats: () => Promise<Array<{ id: string; name: string; platform: string; extensions: string[] }>>
   onImportProgress: (callback: (progress: ImportProgress) => void) => () => void
   getCatchphraseAnalysis: (sessionId: string, filter?: TimeFilter) => Promise<CatchphraseAnalysis>
   getMentionAnalysis: (sessionId: string, filter?: TimeFilter) => Promise<MentionAnalysis>

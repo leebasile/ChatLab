@@ -100,6 +100,12 @@
     "import": "匯入 ({count})",
     "noChats": "未發現任何聊天"
   },
+  "formatSelector": {
+    "title": "選擇聊天記錄格式",
+    "hint": "無法自動識別此檔案的格式，請手動選擇對應的聊天記錄格式。",
+    "manualSelect": "手動選擇格式",
+    "confirm": "使用此格式匯入"
+  },
   "footer": {
     "website": "官網",
     "terms": "使用條款"

@@ -74,6 +74,15 @@ export function getSupportedFormats(): FormatFeature[] {
 }
 
 /**
+ * 根据格式 ID 获取格式特征
+ * 用于手动指定格式时跳过嗅探
+ */
+export function getFormatFeatureById(formatId: string): FormatFeature | null {
+  const all = sniffer.getSupportedFormats()
+  return all.find((f) => f.id === formatId) ?? null
+}
+
+/**
  * 获取格式的预处理器（如果有）
  */
 export function getPreprocessor(filePath: string) {

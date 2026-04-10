@@ -100,6 +100,12 @@
     "import": "インポート ({count})",
     "noChats": "チャットが見つかりません"
   },
+  "formatSelector": {
+    "title": "チャット形式を選択",
+    "hint": "ファイル形式を自動検出できませんでした。対応するチャット形式を手動で選択してください。",
+    "manualSelect": "形式を手動で選択",
+    "confirm": "この形式でインポート"
+  },
   "footer": {
     "website": "公式サイト",
     "terms": "利用規約"
