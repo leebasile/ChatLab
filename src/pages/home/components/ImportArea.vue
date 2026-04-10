@@ -2,6 +2,7 @@
 import { FileDropZone } from '@/components/UI'
 import FileListItem from './FileListItem.vue'
 import ChatSelector, { type ChatInfo } from './ChatSelector.vue'
+import FormatSelectorModal from './FormatSelectorModal.vue'
 import { storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -28,6 +29,10 @@ const {
 // 聊天选择器状态（多聊天格式通用）
 const showChatSelector = ref(false)
 const chatSelectorFilePath = ref('')
+
+// 格式选择器状态（自动检测失败时的手动兜底）
+const showFormatSelector = ref(false)
+const formatSelectorFilePath = ref('')
 
 // 自动生成会话索引（与 importFileFromPath 保持一致）
 async function autoGenerateSessionIndex(sessionId: string) {
@@ -163,6 +168,10 @@ async function processFilePaths(paths: string[]) {
       const result = await sessionStore.importFileFromPath(paths[0])
       if (!result.success && result.error) {
         importError.value = translateError(result.error)
+        // 格式无法识别时，记住文件路径以便手动选择格式
+        if (result.error === 'error.unrecognized_format') {
+          formatSelectorFilePath.value = paths[0]
+        }
         if (result.diagnosisSuggestion) {
           diagnosisSuggestion.value = result.diagnosisSuggestion
         }
@@ -192,6 +201,49 @@ async function processFilePaths(paths: string[]) {
 
   // 多文件 + 合并导入（调用 store 方法）
   await sessionStore.mergeImportFiles(paths)
+}
+
+// 手动格式选择后的导入处理
+async function handleFormatSelect(formatId: string) {
+  const filePath = formatSelectorFilePath.value
+  if (!filePath) return
+
+  importError.value = null
+  diagnosisSuggestion.value = null
+  importDiagnostics.value = null
+  isImporting.value = true
+  importProgress.value = { stage: 'detecting', progress: 0, message: '' }
+
+  const unsubscribe = window.chatApi.onImportProgress((progress) => {
+    if (progress.stage === 'done') return
+    importProgress.value = progress
+  })
+
+  try {
+    const result = await window.chatApi.importWithOptions(filePath, { formatId })
+    unsubscribe()
+
+    if (importProgress.value) {
+      importProgress.value.progress = 100
+    }
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    if (result.success && result.sessionId) {
+      await sessionStore.loadSessions()
+      sessionStore.selectSession(result.sessionId)
+      await autoGenerateSessionIndex(result.sessionId)
+      await navigateToSession(result.sessionId)
+    } else {
+      importError.value = translateError(result.error || 'error.import_failed')
+    }
+  } catch (error) {
+    importError.value = String(error)
+  } finally {
+    isImporting.value = false
+    setTimeout(() => {
+      importProgress.value = null
+    }, 500)
+  }
 }
 
 // 聊天选择后的导入处理（通用，适用于 Telegram 等多聊天格式）
@@ -743,7 +795,18 @@ const getMergeFileProgressText = (file: MergeFileInfo) =>
           <span>{{ diagnosisSuggestion }}</span>
         </div>
       </div>
-      <UButton v-if="hasImportLog" size="xs" @click="openLatestImportLog">{{ t('home.import.viewLog') }}</UButton>
+      <div class="flex gap-2">
+        <UButton v-if="hasImportLog" size="xs" @click="openLatestImportLog">{{ t('home.import.viewLog') }}</UButton>
+        <UButton
+          v-if="formatSelectorFilePath"
+          size="xs"
+          variant="soft"
+          icon="i-heroicons-list-bullet"
+          @click="showFormatSelector = true"
+        >
+          {{ t('home.formatSelector.manualSelect') }}
+        </UButton>
+      </div>
     </div>
 
     <UButton :to="tutorialUrl" target="_blank" trailing-icon="i-heroicons-chevron-right-20-solid">
@@ -752,5 +815,12 @@ const getMergeFileProgressText = (file: MergeFileInfo) =>
 
     <!-- 聊天选择器（多聊天格式通用） -->
     <ChatSelector v-model:open="showChatSelector" :file-path="chatSelectorFilePath" @select="handleChatSelect" />
+
+    <!-- 格式选择器（自动检测失败时的手动兜底） -->
+    <FormatSelectorModal
+      v-model:open="showFormatSelector"
+      :file-path="formatSelectorFilePath"
+      @select="handleFormatSelect"
+    />
   </div>
 </template>

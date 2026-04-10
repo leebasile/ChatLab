@@ -10,6 +10,7 @@ import {
   streamParseFile,
   detectFormat,
   detectAllFormats,
+  getFormatFeatureById,
   getPreprocessor,
   needsPreprocess,
   type ParsedMeta,
@@ -144,6 +145,16 @@ export async function streamImport(
   requestId: string,
   formatOptions?: Record<string, unknown>
 ): Promise<StreamImportResult> {
+  // 用户手动指定格式时，跳过自动检测直接使用指定的 Parser
+  if (formatOptions?.formatId) {
+    const formatId = formatOptions.formatId as string
+    const feature = getFormatFeatureById(formatId)
+    if (!feature) {
+      return { success: false, error: 'error.unknown_format_id' }
+    }
+    return streamImportSingle(filePath, requestId, feature, formatOptions)
+  }
+
   // 检测所有匹配的格式（按优先级排序）
   const candidates = detectAllFormats(filePath)
   if (candidates.length === 0) {
